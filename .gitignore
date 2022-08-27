@@ -3,9 +3,8 @@ draft.py
 script.py
 playground.ipynb
 saving_script.py
-animation_script.py
 data.csv
-
+data.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
