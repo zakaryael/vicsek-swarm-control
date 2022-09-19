@@ -5,8 +5,6 @@ from scipy.spatial import KDTree
 import json
 import csv
 
-# import pygame
-
 
 class Potential:
     def __init__(self, loc, A, alpha):
@@ -145,18 +143,6 @@ class Swarm:
 
     def update_potential(self, potential):
         self.potential = potential
-
-    def show(self, screen):
-        pass
-        # for index, value in enumerate(self.positions.T):
-        #     direction = self.velocities.T[index] / np.linalg.norm(self.velocities.T[index])# velocities is not even updated shit
-        #     pt0 = value + 100 * direction
-        #     normal_direction = value - value.dot(direction) * direction
-        #     pt1 = value + 50 * normal_direction
-        #     pt2 = value - 50 * normal_direction
-        #     triangle = [tuple(pt0), tuple(pt1), tuple(pt2)]
-        #     pygame.draw.circle(screen, color=(0,0,0), center=tuple(value), radius=10)
-        #     #print(triangle)
 
     def save_to_json(self):
         """
