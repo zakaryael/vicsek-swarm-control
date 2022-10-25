@@ -31,6 +31,9 @@ class Potential:
         return self.A * np.exp(
             -self.alpha * ((x - self.loc[0]) ** 2 + (y - self.loc[1]) ** 2)
         )
+    
+    def update_location(self, loc):
+        self.loc = loc
 
 
 class Swarm:
