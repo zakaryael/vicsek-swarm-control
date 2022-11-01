@@ -13,7 +13,6 @@ wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of
 ![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif)
 
 <figure markdown>
-![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif)
 <figcaption>Vicsek particles with a constant gaussian potential</figcaption>
 </figure>
 
