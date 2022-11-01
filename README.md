@@ -11,7 +11,7 @@ $$\theta_i(t + \Delta t) = <\theta>_r + \eta_i$$
 wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of particle $i$ and $\eta_i$ is a random perturbation
 
 <figure markdown>
-![vicsek with potential](/animation.gif){ align=left }
+![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif){ align=left }
 <figcaption>Vicsek particles with a constant gaussian potential</figcaption>
 </figure>
 
