@@ -10,6 +10,8 @@ where $x_i$ is the position of the ith particle and its velocity $v_i$ is of mod
 $$\theta_i(t + \Delta t) = <\theta>_r + \eta_i$$
 wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of particle $i$ and $\eta_i$ is a random perturbation
 
+![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif)
+
 <figure markdown>
 ![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif)
 <figcaption>Vicsek particles with a constant gaussian potential</figcaption>
