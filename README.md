@@ -17,3 +17,8 @@ wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of
 </figure>
 
 The aim is to control the potential's location to get the particles to perform certain tasks such as target searching or tracking etc.
+
+## references:
+
+* [NOVEL TYPE OF PHASE TRANSITION IN A SYSTEM OF SELF-DRIVEN PARTICLES
+](https://arxiv.org/pdf/cond-mat/0611743.pdf){:target="_blank"}
