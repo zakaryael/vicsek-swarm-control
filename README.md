@@ -16,9 +16,12 @@ wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of
 <figcaption>Vicsek particles with a constant gaussian potential</figcaption>
 </figure>
 
-The aim is to control the potential's location to get the particles to perform certain tasks such as target searching or tracking etc.
+The aim is to control the potential's location using reinforcement learning to get the particles to perform certain tasks such as target searching or tracking etc.
 
 ## references:
 
 * [NOVEL TYPE OF PHASE TRANSITION IN A SYSTEM OF SELF-DRIVEN PARTICLES
-](https://arxiv.org/pdf/cond-mat/0611743.pdf){:target="_blank"}
+](https://arxiv.org/pdf/cond-mat/0611743.pdf)
+* [The Physics of the Vicsek model](https://link.springer.com/content/pdf/10.1140/epjst/e2016-60066-8.pdf)
+* [Deep Reinforcement Learning for Swarm Systems](https://arxiv.org/pdf/1807.06613v3.pdf)
+* [Acme: A new framework for distributed reinforcement learning](https://arxiv.org/pdf/2006.00979.pdf)
