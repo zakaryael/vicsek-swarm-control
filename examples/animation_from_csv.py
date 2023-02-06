@@ -13,7 +13,7 @@ df = pd.read_csv("data.csv")
 fig, ax = plt.subplots()
 x = np.linspace(0, L, 100)
 X, Y = np.meshgrid(x, x)
-Z = potential.compute2(X, Y)
+Z = potential.compute_values(X, Y)
 plt.imshow(Z, extent=[0, L, 0, L], origin="lower", cmap="viridis_r", alpha=0.5)
 plt.colorbar()
 qv = ax.quiver(
