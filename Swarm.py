@@ -4,36 +4,7 @@ from scipy import sparse
 from scipy.spatial import KDTree
 import json
 import csv
-
-
-class Potential:
-    def __init__(self, loc, A, alpha):
-        """initializes the potential"""
-        self.loc = loc
-        self.A = A
-        self.alpha = alpha
-
-    def compute(self, positions):
-        """Computes the potential gradients at given locations
-        parameters:
-            positions (dxN numpy array): locations at which to compute the potential
-        """
-        return (
-            -2
-            * self.alpha
-            * (positions.T - self.loc).T
-            * self.A
-            * np.exp(-self.alpha * np.sum((positions.T - self.loc) ** 2, axis=1))
-        )
-
-    def compute2(self, x, y):
-        """computes the values of the potential at position (x,y)"""
-        return self.A * np.exp(
-            -self.alpha * ((x - self.loc[0]) ** 2 + (y - self.loc[1]) ** 2)
-        )
-    
-    def update_location(self, loc):
-        self.loc = loc
+from potentials import *
 
 
 class Swarm:
@@ -114,9 +85,11 @@ class Swarm:
             velocity = self.vel_magnitude * np.vstack((vx, vy))
             self.positions += velocity
         else:
-            velocity = self.vel_magnitude * np.vstack(
-                (vx, vy)
-            ) + self.potential.compute(self.positions)
+            velocity = (
+                self.vel_magnitude * np.vstack((vx, vy))
+                + self.potential.compute_gradients(self.positions)
+                + self.noise * np.random.uniform(-1, 1, size=(2, self.size))
+            )  
             self.positions += velocity
             vx, vy = velocity[0], velocity[1]
 
