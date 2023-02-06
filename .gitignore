@@ -137,3 +137,4 @@ dmypy.json
 .pyre/
 .DS_Store
 
+examples/animation_script_bis.py
