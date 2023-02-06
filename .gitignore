@@ -2,8 +2,9 @@
 draft.py
 playground.ipynb
 saving_script.py
-data.csv
-data.json
+*.csv
+*.json
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -135,3 +136,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
+
