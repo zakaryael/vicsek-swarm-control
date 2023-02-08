@@ -15,8 +15,8 @@ class Swarm:
         vel_magnitude,
         sensing_radius,
         noise,
-        L,
-        potential=None,
+        box_length,
+        potential_fields=None,
         save_json=False,
         save_csv=True,
     ):
@@ -27,7 +27,7 @@ class Swarm:
             vel_magnitude (float): initial velocity magnitude of the particles
             sensing_radius (float):
             noise (float):
-            L (float):
+            box_length (float):
         """
         assert orientations.shape[0] == positions.shape[1]
         self.size = orientations.shape[0]
@@ -39,9 +39,9 @@ class Swarm:
         )
         self.sensing_radius = sensing_radius
         self.noise = noise
-        self.L = L  ## not so happy about L being here
+        self.box_length = box_length  ## not so happy about box_length being here
         self.neighbors = None
-        self.potential = potential
+        self.potential_fields = potential_fields
         self.iteration = 0
         self.save_json = save_json
         self.save_csv = save_csv
@@ -68,7 +68,7 @@ class Swarm:
 
     def update_orientations(self):
         # change into :update orientations to average orientations
-        tree = KDTree(self.positions.T)  # , boxsize=[self.L, self.L]
+        tree = KDTree(self.positions.T)  # , boxsize=[self.box_length, self.box_length]
         dist = tree.sparse_distance_matrix(
             tree, max_distance=self.sensing_radius, output_type="coo_matrix"
         )
@@ -81,20 +81,23 @@ class Swarm:
 
     def update_positions(self):
         vx, vy = np.cos(self.orientations), np.sin(self.orientations)
-        if self.potential is None:
+        if self.potential_fields is None:
             velocity = self.vel_magnitude * np.vstack((vx, vy))
             self.positions += velocity
         else:
+            v_potentials = np.zeros((2, self.size))
+            for potential in self.potential_fields.values():
+                v_potentials += potential.compute_gradients(self.positions)
             velocity = (
                 self.vel_magnitude * np.vstack((vx, vy))
-                + self.potential.compute_gradients(self.positions)
+                + v_potentials
                 + self.noise * np.random.uniform(-1, 1, size=(2, self.size))
             )  
             self.positions += velocity
             vx, vy = velocity[0], velocity[1]
 
-        self.positions[self.positions < 0] += self.L
-        self.positions[self.positions > self.L] -= self.L
+        self.positions[self.positions < 0] += self.box_length
+        self.positions[self.positions > self.box_length] -= self.box_length
 
         vx, vy = vx / np.linalg.norm(velocity, axis=0), vy / np.linalg.norm(
             velocity, axis=0
@@ -117,8 +120,8 @@ class Swarm:
     def compute_order_param(self):
         return np.linalg.norm(self.velocities.mean(axis=1)) / self.vel_magnitude
 
-    def update_potential(self, potential):
-        self.potential = potential
+    def update_potential(self, control_potential):
+        self.potential_fields["control"] = control_potential
 
     def save_to_json(self):
         """
@@ -187,3 +190,7 @@ class Swarm:
 
     def load_from_csv(self):
         pass
+    
+    def in_range(self, position, radius):
+        dist = np.linalg.norm(self.positions - position, axis=0)
+        return dist < radius
