@@ -192,5 +192,5 @@ class Swarm:
         pass
     
     def in_range(self, position, radius):
-        dist = np.linalg.norm(self.positions - position, axis=0)
+        dist = np.linalg.norm(self.positions.T - position, axis=0)
         return dist < radius
