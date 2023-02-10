@@ -49,7 +49,7 @@ class SwarmEnv(dm_env.Environment):
             r0,
             eta,
             L,
-            potential_fields==potential_fields,
+            potential_fields=potential_fields,
         )
         self.target_radius = target_radius
 
