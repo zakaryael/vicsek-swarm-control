@@ -33,6 +33,7 @@ class SwarmEnv(dm_env.Environment):
             potential (Potential): potential field to be used
             Tmax (int): maximum number of iterations per episode
         """
+        self.g = np.random.default_rng(seed=42) # random number generator
         self.N = N
         self.L = L
         self.v0 = v0
@@ -43,8 +44,8 @@ class SwarmEnv(dm_env.Environment):
         self.iteration = 0 # iteration counter for the episode
         self.reset_next_step = False # flag to reset the environment at the next step
         self.swarm = Swarm(
-            np.random.uniform(0, L, size=(2, N)),
-            np.random.uniform(-np.pi, np.pi, size=N),
+            self.g.uniform(0, self.L / 10, size=(2, self.N)),
+            self.g.uniform(-np.pi, np.pi, size=N),
             v0,
             r0,
             eta,
@@ -52,6 +53,7 @@ class SwarmEnv(dm_env.Environment):
             potential_fields=potential_fields,
         )
         self.target_radius = target_radius
+        
 
     def reset(self):
         """resets the environment and returns the initial observation
@@ -60,8 +62,8 @@ class SwarmEnv(dm_env.Environment):
         """
         self.iteration = 0
         self.swarm = Swarm(
-            np.random.uniform(0, self.L, size=(2, self.N)),
-            np.random.uniform(-np.pi, np.pi, size=self.N),
+            self.g.uniform(0, self.L / 10, size=(2, self.N)),
+            self.g.uniform(-np.pi, np.pi, size=self.N),
             self.v0,
             self.r0,
             self.eta,
@@ -87,7 +89,7 @@ class SwarmEnv(dm_env.Environment):
         reward = self.reward()
         done = self.done()
         info = self.info()
-        return dm_env.transition(reward, observation)
+        return dm_env.transition(reward=reward, observation=observation)
 
     def observation(self):
         """returns the observation
@@ -131,7 +133,7 @@ class SwarmEnv(dm_env.Environment):
             observation_spec (dm_env.specs.Array): the observation spec
         """
         return dm_env.specs.Array(
-            shape=(2 * self.N + 4,),
+            shape= self.observation().shape,# (3 * self.N + 5,), # self.N positions, self.N orientations, 2 target location, 2 control location, 1 iteration alternatively: self.observation().shape
             dtype=np.float32,
             name="observation",
         )
