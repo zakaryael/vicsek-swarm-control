@@ -87,7 +87,7 @@ class SwarmEnv(dm_env.Environment):
         reward = self.reward()
         done = self.done()
         info = self.info()
-        return dm_env.transition(observation, reward)
+        return dm_env.transition(reward, observation)
 
     def observation(self):
         """returns the observation
