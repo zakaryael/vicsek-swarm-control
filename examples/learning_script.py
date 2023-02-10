@@ -1,5 +1,5 @@
 #create an environment
-
+from parameters import *
 from env import SwarmEnv
 from potentials import GaussianPotential, InverseSquarePotential
 from Swarm import Swarm
