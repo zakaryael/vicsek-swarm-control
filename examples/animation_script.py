@@ -15,7 +15,7 @@ def plot_potential_fields(potential_fields, box_length, ax):
     for potential in potential_fields.values():
         Z = potential.compute_values(X, Y)
         potential_plots.append(ax.imshow(Z, extent=[0, box_length, 0, box_length], origin='lower',
-                    cmap='viridis_r', alpha=0.5))
+                    cmap='RdYlBu_r', alpha=0.5))
         #add a legend()
         #ax.legend(potential_plots, potential_fields.keys())
 
