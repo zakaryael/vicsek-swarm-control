@@ -11,10 +11,10 @@ df = pd.read_csv("data.csv")
 
 # prepare the plot
 fig, ax = plt.subplots()
-x = np.linspace(0, L, 100)
+x = np.linspace(0, box_length, 100)
 X, Y = np.meshgrid(x, x)
 Z = potential.compute_values(X, Y)
-plt.imshow(Z, extent=[0, L, 0, L], origin="lower", cmap="viridis_r", alpha=0.5)
+plt.imshow(Z, extent=[0, box_length, 0, box_length], origin="lower", cmap="viridis_r", alpha=0.5)
 plt.colorbar()
 qv = ax.quiver(
     df.iloc[0, 0:N],
@@ -26,8 +26,8 @@ qv = ax.quiver(
     headaxislength=10,
     headlength=9,
 )
-ax.set_xlim(0, L)
-ax.set_ylim(0, L)
+ax.set_xlim(0, box_length)
+ax.set_ylim(0, box_length)
 plt.tight_layout()
 
 
