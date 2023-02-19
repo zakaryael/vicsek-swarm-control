@@ -5,6 +5,7 @@ from scipy.spatial import KDTree
 import json
 import csv
 from potentials import *
+import copy
 
 
 class Swarm:
@@ -18,7 +19,7 @@ class Swarm:
         box_length,
         potential_fields=None,
         save_json=False,
-        save_csv=True,
+        save_csv=False,
     ):
         """initializes the swarm object
         parameters:
@@ -41,7 +42,7 @@ class Swarm:
         self.noise = noise
         self.box_length = box_length  ## not so happy about box_length being here
         self.neighbors = None
-        self.potential_fields = potential_fields
+        self.potential_fields = copy.deepcopy(potential_fields)
         self.iteration = 0
         self.save_json = save_json
         self.save_csv = save_csv
@@ -104,6 +105,7 @@ class Swarm:
         )
         self.vx = vx
         self.vy = vy
+        self.orientations = np.arctan2(vy, vx)
         self.velocities = velocity
 
     def evol(self):
@@ -192,5 +194,5 @@ class Swarm:
         pass
     
     def in_range(self, position, radius):
-        dist = np.linalg.norm(self.positions.T - position, axis=0)
+        dist = np.linalg.norm(self.positions.T - position, axis=1)
         return dist < radius
