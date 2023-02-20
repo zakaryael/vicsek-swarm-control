@@ -78,17 +78,21 @@ class SwarmVisualizer:
             target[0], target[1], s=100, color="red", marker="X", label="target"
         )
 
-    def render(self, positions, orientations, potential_fields, target):
+    def render(self, positions, orientations, potential_fields, target, iteration):
         # render the swarm, the potential fields and the target
         self._render_swarm(positions, orientations)
         self._render_potential_fields(potential_fields)
         self._render_target(target)
+        # add the iteration number to the title
+        self.ax.set_title(f"Vicsek Swarm - Time {iteration} s")
+        
         # update the figure
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
         # return the image as a 3D numpy array
         img = np.frombuffer(self.fig.canvas.tostring_rgb(), dtype=np.uint8).reshape((int(self.fig.bbox.bounds[3]), int(self.fig.bbox.bounds[2]), -1))
         
+
         return img
         
 
