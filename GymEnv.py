@@ -112,7 +112,7 @@ class SwarmEnv(gym.Env):
         # Render the environment to the screen
         if self.visualization is None:
             self.visualization = SwarmVisualizer(self.L)
-        self.visualization.render(
+        return self.visualization.render(
             self.swarm.positions,
             self.swarm.orientations,
             self.potential_fields,

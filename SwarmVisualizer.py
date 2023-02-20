@@ -2,6 +2,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+
 
 class SwarmVisualizer:
     def __init__(self, L, cmap="RdYlBu_r"):
@@ -84,3 +86,9 @@ class SwarmVisualizer:
         # update the figure
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+        # return the image as a 3D numpy array
+        img = np.frombuffer(self.fig.canvas.tostring_rgb(), dtype=np.uint8).reshape((int(self.fig.bbox.bounds[3]), int(self.fig.bbox.bounds[2]), -1))
+        
+        return img
+        
+
