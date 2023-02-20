@@ -78,6 +78,10 @@ class SwarmEnv(gym.Env):
         self.potential_fields["control"].update_location(
             self.potential_fields["control"].loc + action
         )
+        #impose periodic boundary conditions on the control potential field
+        self.potential_fields["control"].loc = np.mod(
+            self.potential_fields["control"].loc, self.L
+        )
         self.swarm.update_potential(self.potential_fields["control"])
         self.swarm.evol()
 
@@ -117,6 +121,7 @@ class SwarmEnv(gym.Env):
             self.swarm.orientations,
             self.potential_fields,
             self.potential_fields["target"].loc,
+            self.iteration,
         )
 
     def close(self):
@@ -151,15 +156,19 @@ class SwarmEnv(gym.Env):
             dtype=np.float32,
         )
         # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        # reward = -1 # penalize for each step
-        reward = 0
-        # add the number of agents in the target during this step
-        reward += self.n_trapped - self.n_trapped_old
+        reward = -0.25
+        # # add the number of agents in the target during this step
+        # reward += self.n_trapped - self.n_trapped_old
+
+        # if we're on the last iteration, add the number of agents in the target
+        if self.iteration == self.Tmax - 1:
+            reward += self.n_trapped
+
         self.n_trapped_old = self.n_trapped
-        x_control, y_control = self.potential_fields["control"].loc
-        # check if the control potential field is inside the box
-        if x_control < 0 or x_control > self.L or y_control < 0 or y_control > self.L:
-            reward -= 0  # penalize for being outside the box
+        # x_control, y_control = self.potential_fields["control"].loc
+        # # check if the control potential field is inside the box
+        # if x_control < 0 or x_control > self.L or y_control < 0 or y_control > self.L:
+        #     reward -= 0  # penalize for being outside the box
 
         return reward
 
@@ -168,4 +177,4 @@ class SwarmEnv(gym.Env):
         returns:
             done (bool): if the episode is done
         """
-        return self.iteration >= self.Tmax or self.n_trapped == self.swarm.size
+        return self.iteration >= self.Tmax or self.n_trapped >= self.swarm.size
