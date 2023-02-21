@@ -5,6 +5,9 @@ saving_script.py
 *.csv
 *.json
 *.ipynb
+examples/xp*
+*data/*
+*frames
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -137,4 +140,4 @@ dmypy.json
 .pyre/
 .DS_Store
 
-examples/animation_script_bis.py
+
