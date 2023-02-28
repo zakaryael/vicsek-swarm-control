@@ -20,8 +20,7 @@ class Swarm:
         noise,
         box_length,
         potential_fields=None,
-        save_json=False,
-        save_csv=False,
+        save_mode=None,
         boundary_conditions="periodic",
     ):
         """initializes the swarm object
@@ -46,8 +45,7 @@ class Swarm:
         self.neighbors = None
         self.potential_fields = copy.deepcopy(potential_fields)
         self.iteration = 0
-        self.save_json = save_json
-        self.save_csv = save_csv
+        self.save_mode = save_mode
         self.boundary_conditions = boundary_conditions
 
     def _compute_interactions(self):
@@ -147,10 +145,10 @@ class Swarm:
         self._update_orientations()
         self._apply_boundary_conditions()
 
-        if self.save_json:
+        if self.save_mode == "json":
             self.save_to_json()
 
-        if self.save_csv:
+        if self.save_mode == "csv":
             self.save_to_csv()
         self.iteration += 1
 
