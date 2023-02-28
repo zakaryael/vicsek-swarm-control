@@ -6,6 +6,8 @@ import json
 import csv
 from potentials import *
 import copy
+from scipy.spatial import distance_matrix
+
 
 
 class Swarm:
@@ -20,6 +22,7 @@ class Swarm:
         potential_fields=None,
         save_json=False,
         save_csv=False,
+        boundary_conditions="periodic",
     ):
         """initializes the swarm object
         parameters:
@@ -45,6 +48,7 @@ class Swarm:
         self.iteration = 0
         self.save_json = save_json
         self.save_csv = save_csv
+        self.boundary_conditions = boundary_conditions
 
     def _compute_interactions(self):
         # change into :update orientations to mean orientations
@@ -91,17 +95,54 @@ class Swarm:
         self.orientations = np.arctan2(
             normalized_velocities[1], normalized_velocities[0]
         )
+    
+    def add_repulsive_forces(self, k):
+        """Computes the repulsive forces between particles
+        parameters:
+            positions (dxN numpy array): positions of the particles
+            k (float): constant in the repulsive potential
+        """
+        dist_matrix = distance_matrix(self.positions.T, self.positions.T)
+        # replace the diagonal entries with 1
+        dist_matrix[np.diag_indices_from(dist_matrix)] = 1
+        # compute the inverse of the distance matrix
+        inv_dist_matrix = 1 / dist_matrix
+        dist_matrix[np.diag_indices_from(inv_dist_matrix)] = 0
+        # compute the sum of the inverse distances
+        sum_inv_dist_matrix = np.sum(inv_dist_matrix, axis=1)
+        # compute the repulsive forces
+        repulsive_forces = 2 * k * sum_inv_dist_matrix * self.positions
+        self.velocities += repulsive_forces
 
     def _apply_boundary_conditions(self):
-        self.positions[self.positions < 0] += self.box_length
-        self.positions[self.positions > self.box_length] -= self.box_length
+        if self.boundary_conditions == "periodic":
+            self.positions[self.positions < 0] += self.box_length
+            self.positions[self.positions > self.box_length] -= self.box_length
+        
+        elif self.boundary_conditions == "reflective":
+            #1.update the velocities at the boundaries:
+            self.velocities[0, self.positions[0] < 0] *= -1
+            self.velocities[0, self.positions[0] > self.box_length] *= -1
+            self.velocities[1, self.positions[1] < 0] *= -1
+            self.velocities[1, self.positions[1] > self.box_length] *= -1
+
+            #2. update the positions according to the updated velocities
+            self.positions[self.positions < 0] += self.velocities[self.positions < 0]
+            self.positions[self.positions > self.box_length] += self.velocities[self.positions > self.box_length]
+
+            #3. update the orientations
+            self._update_orientations()
+    
+    def _zero_velocities(self):
+        self.velocities = np.zeros((2, self.size))
 
     def evol(self):
-        self.velocities = 0
+        self._zero_velocities()
         self._compute_interactions()
         self._add_noise()
         self._add_noisy_interactions()
         self._add_pot_grads()
+        self.add_repulsive_forces(0.00001)
         self._update_positions()
         self._update_orientations()
         self._apply_boundary_conditions()
