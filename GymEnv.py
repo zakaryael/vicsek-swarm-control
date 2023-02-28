@@ -22,10 +22,12 @@ class SwarmEnv(gym.Env):
         eta=0.05,
         Tmax=1000,
         target_radius=0.1,
+        boundary_conditions="periodic",
         out_dir=None,
     ):
         super(SwarmEnv, self).__init__()
         self.g = np.random.default_rng(seed=42)  # random number generator
+        self.boundary_conditions = boundary_conditions
         self.out_dir = out_dir
         self.target_radius = target_radius
         self.N = N
@@ -74,6 +76,7 @@ class SwarmEnv(gym.Env):
             eta,
             L,
             potential_fields=potential_fields,
+            boundary_conditions=boundary_conditions,
         )
 
     def step(self, action):
@@ -84,15 +87,7 @@ class SwarmEnv(gym.Env):
             ),
             dtype=np.float32,
         )
-        # update the control potential field and evolve the swarm
-        self.potential_fields["control"].update_location(
-            self.potential_fields["control"].loc + action
-        )
-        #impose periodic boundary conditions on the control potential field
-        self.potential_fields["control"].loc = np.mod(
-            self.potential_fields["control"].loc, self.L
-        )
-        self.swarm.update_potential(self.potential_fields["control"])
+        self.swarm.update_control_potential(action)
         self.swarm.evol()
 
         # compute the reward
@@ -119,6 +114,7 @@ class SwarmEnv(gym.Env):
             self.eta,
             self.L,
             potential_fields=self.potential_fields,
+            boundary_conditions=self.boundary_conditions,
         )
         return self.observation()
 

@@ -43,10 +43,10 @@ class Swarm:
         self.box_length = box_length  ## not so happy about box_length being here
         self.velocities = 0
         self.neighbors = None
-        self.potential_fields = copy.deepcopy(potential_fields)
-        self.iteration = 0
+        self.potential_fields = potential_fields #  careful as this makes changes to the original object
         self.save_mode = save_mode
         self.boundary_conditions = boundary_conditions
+        self.iteration = 0 
 
     def _compute_interactions(self):
         # change into :update orientations to mean orientations
@@ -133,6 +133,9 @@ class Swarm:
     
     def _zero_velocities(self):
         self.velocities = np.zeros((2, self.size))
+    
+    def update_control_potential(self, increment):
+        self.potential_fields["control"].update_location(increment, self.box_length, self.boundary_conditions)
 
     def evol(self):
         self._zero_velocities()
@@ -154,9 +157,6 @@ class Swarm:
 
     def compute_order_param(self):
         return np.linalg.norm(self.velocities.mean(axis=1)) / self.vel_magnitude
-
-    def update_potential(self, control_potential):
-        self.potential_fields["control"] = control_potential
 
     def save_to_json(self):
         """

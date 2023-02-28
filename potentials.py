@@ -5,9 +5,9 @@ import numpy as np
 
 
 class Potential:
-    def __init__(self, loc, params):
+    def __init__(self, loc):
         """initializes the potential"""
-        pass
+        self.loc = loc
 
     def compute_gradients(self, positions):
         """Computes the potential gradients at given locations
@@ -20,8 +20,20 @@ class Potential:
         """computes the values of the potential at position (x,y)"""
         pass
 
-    def update_location(self, loc):
-        self.loc = loc
+    def update_location(self, increment, boxsize, boundary_conditions):
+        """updates the location of the potential"""
+        self.loc += increment
+        if boundary_conditions == "periodic":
+            self.loc[self.loc < 0] += boxsize
+            self.loc[self.loc > boxsize] -= boxsize
+        
+        elif boundary_conditions == "reflective":
+            if self.loc[0] < 0 or self.loc[0] > boxsize:
+                increment[0] *= -1
+            if self.loc[1] < 0 or self.loc[1] > boxsize:
+                increment[1] *= -1
+            self.loc += increment
+        
 
 
 # define a class for gaussian potential that inherits from the potential class
@@ -36,7 +48,7 @@ class GaussianPotential(Potential):
     """
 
     def __init__(self, loc, params):
-        self.loc = loc
+        super().__init__(loc)
         self.A = params["A"]
         self.alpha = params["alpha"]
 
@@ -68,13 +80,12 @@ class InverseSquarePotential(Potential):
     """
 
     def __init__(self, loc, params):
-        self.loc = loc
+        super().__init__(loc)
         self.A = params["A"]
         self.b = params["b"]
         self.n = params["n"]
 
     def compute_values(self, x, y):
-        # positions = np.array([x,y])
         return (
             self.A
             / (self.b**2 + (x - self.loc[0]) ** 2 + (y - self.loc[1]) ** 2) ** self.n
