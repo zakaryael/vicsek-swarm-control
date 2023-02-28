@@ -35,40 +35,19 @@ class Swarm:
         self.positions = positions
         self.orientations = orientations
         self.vel_magnitude = vel_magnitude
-        self.velocities = vel_magnitude * np.vstack(
-            (np.cos(orientations), np.sin(orientations))
-        )
+        self.g = np.random.default_rng(seed=42)
         self.sensing_radius = sensing_radius
         self.noise = noise
         self.box_length = box_length  ## not so happy about box_length being here
+        self.velocities = 0
         self.neighbors = None
         self.potential_fields = copy.deepcopy(potential_fields)
         self.iteration = 0
         self.save_json = save_json
         self.save_csv = save_csv
 
-    def compute_neighbors(self):
-        """finds the particles with the sensing radius of every particle in the swarm"""
-        self.neighbors = {}
-        for particle, position in enumerate(self.positions.T):
-            for particle_, position_ in enumerate(self.positions.T):
-                dist_squarred = np.sum((position - position_) ** 2)
-                if dist_squarred < self.sensing_radius**2:
-                    if particle in self.neighbors:
-                        self.neighbors[particle].append(particle_)
-                    else:
-                        self.neighbors[particle] = [particle_]
-        return self.neighbors
-
-    def compute_orientations(self):
-        for key, value in self.neighbors.items():
-            self.orientations[key] = self.orientations[
-                value
-            ].mean() + self.noise * np.random.uniform(-np.pi, np.pi, size=1)
-        return self.orientations
-
-    def update_orientations(self):
-        # change into :update orientations to average orientations
+    def _compute_interactions(self):
+        # change into :update orientations to mean orientations
         tree = KDTree(self.positions.T)  # , boxsize=[self.box_length, self.box_length]
         dist = tree.sparse_distance_matrix(
             tree, max_distance=self.sensing_radius, output_type="coo_matrix"
@@ -76,41 +55,56 @@ class Swarm:
         data = np.exp(self.orientations[dist.col] * 1j)
         neigh = sparse.coo_matrix((data, (dist.row, dist.col)), shape=dist.get_shape())
         S = np.squeeze(np.asarray(neigh.tocsr().sum(axis=1)))
-        self.orientations = np.angle(S) + self.noise * np.random.uniform(
+        self.orientations = np.angle(S)
+
+    def _add_noise(self):
+        """adds noise to the orientations of the particles"""
+        self.orientations += self.noise * self.g.uniform(
             -np.pi, np.pi, size=self.size
         )
 
-    def update_positions(self):
+    def _add_noisy_interactions(self):
+        """adds the interaction term to the velocities of the particles"""
         vx, vy = np.cos(self.orientations), np.sin(self.orientations)
-        if self.potential_fields is None:
-            velocity = self.vel_magnitude * np.vstack((vx, vy))
-            self.positions += velocity
-        else:
-            v_potentials = np.zeros((2, self.size))
-            for potential in self.potential_fields.values():
-                v_potentials += potential.compute_gradients(self.positions)
-            velocity = (
-                self.vel_magnitude * np.vstack((vx, vy))
-                + v_potentials
-                + self.noise * np.random.uniform(-1, 1, size=(2, self.size))
-            )  
-            self.positions += velocity
-            vx, vy = velocity[0], velocity[1]
+        self.velocities += self.vel_magnitude * np.vstack((vx, vy))
 
+    def _add_pot_grads(self):
+        """adds the potential gradient to the velocities of the particles"""
+        pot_grads = np.zeros((2, self.size))
+        if self.potential_fields is not None:
+            for potential in self.potential_fields.values():
+                pot_grads += potential.compute_gradients(self.positions)
+        self.velocities += pot_grads
+
+    def _compute_normalized_direction(self):
+        vx, vy = np.cos(self.orientations), np.sin(self.orientations)
+        return np.vstack((vx, vy))
+
+    def _update_positions(self):
+        """updates the positions of the particles"""
+        self.positions += self.velocities
+
+    def _update_orientations(self):
+        normalized_velocities = self.velocities / np.linalg.norm(
+            self.velocities, axis=0
+        )
+        self.orientations = np.arctan2(
+            normalized_velocities[1], normalized_velocities[0]
+        )
+
+    def _apply_boundary_conditions(self):
         self.positions[self.positions < 0] += self.box_length
         self.positions[self.positions > self.box_length] -= self.box_length
 
-        vx, vy = vx / np.linalg.norm(velocity, axis=0), vy / np.linalg.norm(
-            velocity, axis=0
-        )
-        self.vx = vx
-        self.vy = vy
-        self.orientations = np.arctan2(vy, vx)
-        self.velocities = velocity
-
     def evol(self):
-        self.update_orientations()
-        self.update_positions()
+        self.velocities = 0
+        self._compute_interactions()
+        self._add_noise()
+        self._add_noisy_interactions()
+        self._add_pot_grads()
+        self._update_positions()
+        self._update_orientations()
+        self._apply_boundary_conditions()
 
         if self.save_json:
             self.save_to_json()
@@ -192,7 +186,7 @@ class Swarm:
 
     def load_from_csv(self):
         pass
-    
+
     def in_range(self, position, radius):
         dist = np.linalg.norm(self.positions.T - position, axis=1)
         return dist < radius
