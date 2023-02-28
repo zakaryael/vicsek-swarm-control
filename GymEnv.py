@@ -69,7 +69,7 @@ class SwarmEnv(gym.Env):
         )  # low=lower_bounds, high=upper_bounds,
         # now the swarm
         self.swarm = Swarm(
-            self.g.uniform(0, self.L / 2, size=(2, self.N)),
+            self.g.uniform(0, self.L, size=(2, self.N)),
             self.g.uniform(-np.pi, np.pi, size=N),
             v0,
             r0,
@@ -107,7 +107,7 @@ class SwarmEnv(gym.Env):
         # Reset the state of the environment to an initial state
         self.iteration = 0
         self.swarm = Swarm(
-            self.g.uniform(0, self.L / 2, size=(2, self.N)),
+            self.g.uniform(0, self.L, size=(2, self.N)),
             self.g.uniform(-np.pi, np.pi, size=self.N),
             self.v0,
             self.r0,
