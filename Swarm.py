@@ -20,8 +20,9 @@ class Swarm:
         noise,
         box_length,
         potential_fields=None,
-        save_mode=None,
         boundary_conditions="periodic",
+        repulsion=0,
+        save_mode=None,
     ):
         """initializes the swarm object
         parameters:
@@ -47,6 +48,7 @@ class Swarm:
         self.save_mode = save_mode
         self.boundary_conditions = boundary_conditions
         self.iteration = 0 
+        self.repulsion = repulsion
 
     def _compute_interactions(self):
         # change into :update orientations to mean orientations
@@ -143,7 +145,8 @@ class Swarm:
         self._add_noise()
         self._add_noisy_interactions()
         self._add_pot_grads()
-        self.add_repulsive_forces(0.00001)
+        if self.repulsion:
+            self.add_repulsive_forces(self.repulsion)
         self._update_positions()
         self._update_orientations()
         self._apply_boundary_conditions()
