@@ -41,7 +41,7 @@ class SwarmEnv(gym.Env):
         # Define action and observation space
         # start with the action space: continuous 2d vector
         self.action_space = spaces.Box(
-            low=-0.01, high=0.01, shape=(2,), dtype=np.float32
+            low=-0.01, high=0.01, shape=(2,), dtype=np.float64
         )  #
         # now the observation space: continuous (3 * N + 5) vector
         lower_bounds = np.concatenate(
@@ -63,7 +63,7 @@ class SwarmEnv(gym.Env):
             )
         )
         self.observation_space = spaces.Box(
-            low=lower_bounds, high=upper_bounds, shape=(3 * N + 5,), dtype=np.float32
+            low=lower_bounds, high=upper_bounds, shape=(3 * N + 5,), dtype=np.float64
         )  # low=lower_bounds, high=upper_bounds,
         # now the swarm
         self.swarm = Swarm(
