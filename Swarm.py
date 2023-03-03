@@ -22,6 +22,7 @@ class Swarm:
         potential_fields=None,
         boundary_conditions="periodic",
         repulsion=0,
+        walls=None,
         save_mode=None,
     ):
         """initializes the swarm object
@@ -49,6 +50,7 @@ class Swarm:
         self.boundary_conditions = boundary_conditions
         self.iteration = 0 
         self.repulsion = repulsion
+        self.walls = walls
 
     def _compute_interactions(self):
         # change into :update orientations to mean orientations
@@ -96,6 +98,46 @@ class Swarm:
             normalized_velocities[1], normalized_velocities[0]
         )
     
+    def _bounce(self, which, axis):
+        """Bounce particles off the walls
+        parameters:
+            which (array of bools): which particles to bounce
+            axis (int): axis along which to bounce
+        """
+        self.velocities[axis, which] *= -1
+        self.positions[axis, which] += self.velocities[axis, which]
+    
+    def _wich_side_of_wall(self, positions, wall):
+        """Which side of the wall the particles are on
+        parameters:
+            wall (Wall): wall dictionary with keys "origin", "length", "axis"
+        returns:
+            which (array of bools): which particles are on the other side of the wall
+        """
+        axis = 1 - wall["axis"] # axis perpendicular to the wall
+        return positions[axis] > wall["origin"][axis] 
+    
+    def _add_wall(self, wall):
+        """Adds a wall to the environment
+        parameters:
+            wall (Wall): wall dictionary with keys "origin", "length", "axis"
+        """
+        #1. find the particles that are bouncing off the wall:
+        old_positions = self.positions - self.velocities
+        #compute the particles that are on the other side of the wall from their old position
+        previously_on_other_side = self._wich_side_of_wall(old_positions, wall)
+        
+        #compute the particles that are on the other side of the wall from their new position
+        currently_on_other_side = self._wich_side_of_wall(self.positions, wall)
+        
+        #compute the particles that are within the wall range
+        within_wall_range = np.logical_and(self.positions[wall["axis"]] >= wall["origin"][wall["axis"]], self.positions[wall["axis"]] < wall["origin"][wall["axis"]] + wall["length"])
+        #compute the particles that are bouncing off the wall
+        bouncing = np.logical_and(np.logical_xor(previously_on_other_side, currently_on_other_side), within_wall_range)
+        
+        #2. bounce the particles off the wall
+        self._bounce(bouncing, 1 - wall["axis"])
+        
     def add_repulsive_forces(self, k):
         """Computes the repulsive forces between particles
         parameters:
@@ -120,18 +162,12 @@ class Swarm:
             self.positions[self.positions > self.box_length] -= self.box_length
         
         elif self.boundary_conditions == "reflective":
-            #1.update the velocities at the boundaries:
-            self.velocities[0, self.positions[0] < 0] *= -1
-            self.velocities[0, self.positions[0] > self.box_length] *= -1
-            self.velocities[1, self.positions[1] < 0] *= -1
-            self.velocities[1, self.positions[1] > self.box_length] *= -1
+            # bounce off the boundary walls
+            self._bounce(self.positions[0] < 0, 0)
+            self._bounce(self.positions[0] > self.box_length, 0)
+            self._bounce(self.positions[1] < 0, 1)
+            self._bounce(self.positions[1] > self.box_length, 1)
 
-            #2. update the positions according to the updated velocities
-            self.positions[self.positions < 0] += self.velocities[self.positions < 0]
-            self.positions[self.positions > self.box_length] += self.velocities[self.positions > self.box_length]
-
-            #3. update the orientations
-            self._update_orientations()
     
     def _zero_velocities(self):
         self.velocities = np.zeros((2, self.size))
@@ -140,6 +176,7 @@ class Swarm:
         self.potential_fields["control"].update_location(increment, self.box_length, self.boundary_conditions)
 
     def evol(self):
+        """evolves the swarm by one time step"""
         self._zero_velocities()
         self._compute_interactions()
         self._add_noise()
@@ -148,8 +185,11 @@ class Swarm:
         if self.repulsion:
             self.add_repulsive_forces(self.repulsion)
         self._update_positions()
-        self._update_orientations()
+        if self.walls is not None:
+            for wall in self.walls:
+                self._add_wall(wall)
         self._apply_boundary_conditions()
+        self._update_orientations()
 
         if self.save_mode == "json":
             self.save_to_json()

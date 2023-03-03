@@ -1,5 +1,5 @@
 from Swarm import Swarm
-from potentials import *
+
 from SwarmVisualizer import *
 import copy
 import csv
@@ -24,10 +24,13 @@ class SwarmEnv(gym.Env):
         target_radius=0.1,
         boundary_conditions="periodic",
         out_dir=None,
+        walls=None,
     ):
         super(SwarmEnv, self).__init__()
+        #super(Swarm, self).__init__()
         self.g = np.random.default_rng(seed=42)  # random number generator
         self.boundary_conditions = boundary_conditions
+        self.walls = walls
         self.out_dir = out_dir
         self.target_radius = target_radius
         self.N = N
@@ -77,6 +80,7 @@ class SwarmEnv(gym.Env):
             L,
             potential_fields=potential_fields,
             boundary_conditions=boundary_conditions,
+            walls=walls,
         )
 
     def step(self, action):
@@ -115,6 +119,7 @@ class SwarmEnv(gym.Env):
             self.L,
             potential_fields=self.potential_fields,
             boundary_conditions=self.boundary_conditions,
+            walls=self.walls,
         )
         return self.observation()
 
@@ -138,7 +143,7 @@ class SwarmEnv(gym.Env):
         if mode == "plot":
             # Render the environment to the screen
             if self.visualization is None:
-                self.visualization = SwarmVisualizer(self.L)
+                self.visualization = SwarmVisualizer(self.L, walls=self.walls)
             return self.visualization.render(
                 self.swarm.positions,
                 self.swarm.orientations,
