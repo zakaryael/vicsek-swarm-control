@@ -8,6 +8,7 @@ saving_script.py
 examples/xp*
 *data/*
 *frames
+trash-bin
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
