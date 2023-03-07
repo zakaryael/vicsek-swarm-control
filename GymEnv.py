@@ -21,17 +21,21 @@ class SwarmEnv(gym.Env):
         r0=0.1,
         eta=0.05,
         Tmax=1000,
+        repulsion=0,
+        target_location=None,
         target_radius=0.1,
         boundary_conditions="periodic",
-        out_dir=None,
         walls=None,
+        out_dir=None,
+        seed=42,
     ):
         super(SwarmEnv, self).__init__()
-        #super(Swarm, self).__init__()
-        self.g = np.random.default_rng(seed=42)  # random number generator
+        self.g = np.random.default_rng(seed=seed)  # random number generator
         self.boundary_conditions = boundary_conditions
         self.walls = walls
+        self.repulsion = repulsion
         self.out_dir = out_dir
+        self.target_location = target_location if target_location is not None else potential_fields["target"].loc
         self.target_radius = target_radius
         self.N = N
         self.L = L
@@ -81,6 +85,7 @@ class SwarmEnv(gym.Env):
             potential_fields=potential_fields,
             boundary_conditions=boundary_conditions,
             walls=walls,
+            repulsion=repulsion,
         )
 
     def step(self, action):
@@ -120,10 +125,11 @@ class SwarmEnv(gym.Env):
             potential_fields=self.potential_fields,
             boundary_conditions=self.boundary_conditions,
             walls=self.walls,
+            repulsion=self.repulsion,
         )
         return self.observation()
 
-    def render(self, mode= None, close=False):
+    def render(self, mode="plot", close=False):
         
         if self.out_dir:
             # Render the current state of the environment to a csv file
@@ -148,7 +154,8 @@ class SwarmEnv(gym.Env):
                 self.swarm.positions,
                 self.swarm.orientations,
                 self.potential_fields,
-                self.potential_fields["target"].loc,
+                self.target_location,
+                self.target_radius,
                 self.iteration,
             )
 
