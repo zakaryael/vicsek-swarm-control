@@ -12,12 +12,13 @@ wehere $<\theta>_r$ is the average orientation of particles within radius $r$ of
 
 ![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/animation.gif)
 
+
 <figure markdown>
 <figcaption>Vicsek particles with a constant gaussian potential</figcaption>
 </figure>
 
 The aim is to control the potential's location using reinforcement learning to get the particles to perform certain tasks such as target searching or tracking etc.
-
+![vicsek with potential](https://github.com/zakaryael/vicsek-swarm-control/blob/main/demo.gif)
 ## references:
 
 * [NOVEL TYPE OF PHASE TRANSITION IN A SYSTEM OF SELF-DRIVEN PARTICLES
