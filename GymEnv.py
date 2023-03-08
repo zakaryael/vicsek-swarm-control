@@ -22,10 +22,11 @@ class SwarmEnv(gym.Env):
         eta=0.05,
         Tmax=1000,
         repulsion=0,
+        boundary_conditions="periodic",
         target_location=None,
         target_radius=0.1,
-        boundary_conditions="periodic",
         walls=None,
+        control_amplitude=0.01,
         out_dir=None,
         seed=42,
     ):
@@ -50,7 +51,7 @@ class SwarmEnv(gym.Env):
         # Define action and observation space
         # start with the action space: continuous 2d vector
         self.action_space = spaces.Box(
-            low=-0.01, high=0.01, shape=(2,), dtype=np.float64
+            low=-control_amplitude, high=control_amplitude, shape=(2,), dtype=np.float64
         )  #
         # now the observation space: continuous (3 * N + 5) vector
         lower_bounds = np.concatenate(
@@ -187,7 +188,7 @@ class SwarmEnv(gym.Env):
         """
         
         # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        reward = -0.25
+        reward = -0.0
         # # add the number of agents in the target during this step
         # reward += self.n_trapped - self.n_trapped_old
 
