@@ -188,12 +188,12 @@ class SwarmEnv(gym.Env):
         """
         
         # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        reward = -0.0
+        reward = -0.0 #* np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
         # # add the number of agents in the target during this step
         # reward += self.n_trapped - self.n_trapped_old
 
         # if we're on the last iteration, add the number of agents in the target
-        if self.iteration == self.Tmax - 1:
+        if self.done():
             reward += self.n_trapped
 
         
