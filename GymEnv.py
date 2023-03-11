@@ -29,6 +29,7 @@ class SwarmEnv(gym.Env):
         control_amplitude=0.01,
         out_dir=None,
         seed=42,
+        coefficient_of_restitution=1,
     ):
         super(SwarmEnv, self).__init__()
         self.g = np.random.default_rng(seed=seed)  # random number generator
@@ -48,6 +49,8 @@ class SwarmEnv(gym.Env):
         self.iteration = 0  # iteration counter for the episode
         self.visualization = None
         self.n_trapped = 0
+        self.n_trapped_old = 0
+        self.coefficient_of_restitution = coefficient_of_restitution
         # Define action and observation space
         # start with the action space: continuous 2d vector
         self.action_space = spaces.Box(
@@ -87,6 +90,7 @@ class SwarmEnv(gym.Env):
             boundary_conditions=boundary_conditions,
             walls=walls,
             repulsion=repulsion,
+            coefficient_of_restitution=coefficient_of_restitution,
         )
 
     def step(self, action):
@@ -99,7 +103,7 @@ class SwarmEnv(gym.Env):
         )
         self.swarm.update_control_potential(action)
         self.swarm.evol()
-
+ 
         # compute the reward
         reward = self.reward()
         reward = float(reward)
@@ -127,6 +131,7 @@ class SwarmEnv(gym.Env):
             boundary_conditions=self.boundary_conditions,
             walls=self.walls,
             repulsion=self.repulsion,
+            coefficient_of_restitution=self.coefficient_of_restitution,
         )
         return self.observation()
 
@@ -151,13 +156,14 @@ class SwarmEnv(gym.Env):
             # Render the environment to the screen
             if self.visualization is None:
                 self.visualization = SwarmVisualizer(self.L, walls=self.walls)
+            title = f"Vicsek Swarm - Time {self.iteration} s \n Captured: {self.n_trapped} \n Captured on last step: {self.n_captured()}"
+            self.visualization.set_title(title)
             return self.visualization.render(
                 self.swarm.positions,
                 self.swarm.orientations,
                 self.potential_fields,
                 self.target_location,
                 self.target_radius,
-                self.iteration,
             )
 
 
@@ -186,23 +192,18 @@ class SwarmEnv(gym.Env):
         returns:
             reward (float): the reward
         """
-        
         # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        reward = -0.0
-        # # add the number of agents in the target during this step
-        # reward += self.n_trapped - self.n_trapped_old
-
-        # if we're on the last iteration, add the number of agents in the target
-        if self.iteration == self.Tmax - 1:
+        reward = -0.01
+        # reward = -0.01 + self.n_captured()#* np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
+        if self.done():
             reward += self.n_trapped
-
-        
-        # x_control, y_control = self.potential_fields["control"].loc
-        # # check if the control potential field is inside the box
-        # if x_control < 0 or x_control > self.L or y_control < 0 or y_control > self.L:
-        #     reward -= 0  # penalize for being outside the box
-
         return reward
+    
+    def n_captured(self):
+        """returns the number of agents newly in the target"""
+        n_captured = np.max(self.n_trapped - self.n_trapped_old, 0)
+        self.n_trapped_old = self.n_trapped
+        return n_captured
 
     def done(self):
         """returns if the episode is done

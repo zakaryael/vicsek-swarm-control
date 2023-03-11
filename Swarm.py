@@ -23,6 +23,7 @@ class Swarm:
         boundary_conditions="periodic",
         repulsion=0,
         walls=None,
+        coefficient_of_restitution=1,
         save_mode=None,
     ):
         """initializes the swarm object
@@ -39,7 +40,7 @@ class Swarm:
         self.positions = positions
         self.orientations = orientations
         self.vel_magnitude = vel_magnitude
-        self.g = np.random.default_rng(seed=42)
+        self.g = np.random.default_rng()
         self.sensing_radius = sensing_radius
         self.noise = noise
         self.box_length = box_length  ## not so happy about box_length being here
@@ -51,9 +52,10 @@ class Swarm:
         self.iteration = 0 
         self.repulsion = repulsion
         self.walls = walls
+        self.coefficient_of_restitution = coefficient_of_restitution
 
     def _compute_interactions(self):
-        # change into :update orientations to mean orientations
+        """computes the interaction term of the swarm dynamics"""
         tree = KDTree(self.positions.T)  # , boxsize=[self.box_length, self.box_length]
         dist = tree.sparse_distance_matrix(
             tree, max_distance=self.sensing_radius, output_type="coo_matrix"
@@ -61,7 +63,7 @@ class Swarm:
         data = np.exp(self.orientations[dist.col] * 1j)
         neigh = sparse.coo_matrix((data, (dist.row, dist.col)), shape=dist.get_shape())
         S = np.squeeze(np.asarray(neigh.tocsr().sum(axis=1)))
-        self.orientations = np.angle(S)
+        self.orientations += 1 * (np.angle(S) - self.orientations)
 
     def _add_noise(self):
         """adds noise to the orientations of the particles"""
@@ -76,11 +78,9 @@ class Swarm:
 
     def _add_pot_grads(self):
         """adds the potential gradient to the velocities of the particles"""
-        pot_grads = np.zeros((2, self.size))
         if self.potential_fields is not None:
             for potential in self.potential_fields.values():
-                pot_grads += potential.compute_gradients(self.positions)
-        self.velocities += pot_grads
+                self.velocities += potential.compute_gradients(self.positions)
 
     def _compute_normalized_direction(self):
         vx, vy = np.cos(self.orientations), np.sin(self.orientations)
@@ -103,8 +103,9 @@ class Swarm:
         parameters:
             which (array of bools): which particles to bounce
             axis (int): axis along which to bounce
+            cor (float): coefficient of restitution (default 1)
         """
-        self.velocities[axis, which] *= -1
+        self.velocities[axis, which] *= -self.coefficient_of_restitution
         self.positions[axis, which] += self.velocities[axis, which]
     
     def _wich_side_of_wall(self, positions, wall):
@@ -124,37 +125,24 @@ class Swarm:
         """
         #1. find the particles that are bouncing off the wall:
         old_positions = self.positions - self.velocities
-        #compute the particles that are on the other side of the wall from their old position
-        previously_on_other_side = self._wich_side_of_wall(old_positions, wall)
-        
-        #compute the particles that are on the other side of the wall from their new position
-        currently_on_other_side = self._wich_side_of_wall(self.positions, wall)
-        
-        #compute the particles that are within the wall range
-        within_wall_range = np.logical_and(self.positions[wall["axis"]] >= wall["origin"][wall["axis"]], self.positions[wall["axis"]] < wall["origin"][wall["axis"]] + wall["length"])
-        #compute the particles that are bouncing off the wall
-        bouncing = np.logical_and(np.logical_xor(previously_on_other_side, currently_on_other_side), within_wall_range)
-        
+        previously_on_other_side = self._wich_side_of_wall(old_positions, wall) # compute the particles that are on the other side of the wall from their old position
+        currently_on_other_side = self._wich_side_of_wall(self.positions, wall) # compute the particles that are on the other side of the wall from their new position
+        within_wall_range = np.logical_and(self.positions[wall["axis"]] >= wall["origin"][wall["axis"]], self.positions[wall["axis"]] < wall["origin"][wall["axis"]] + wall["length"]) # compute the particles that are within the wall range
+        bouncing = np.logical_and(np.logical_xor(previously_on_other_side, currently_on_other_side), within_wall_range) # compute the particles that are bouncing off the wall
         #2. bounce the particles off the wall
         self._bounce(bouncing, 1 - wall["axis"])
         
-    def add_repulsive_forces(self, k):
+    def _add_repulsive_forces(self, k):
         """Computes the repulsive forces between particles
         parameters:
             positions (dxN numpy array): positions of the particles
             k (float): constant in the repulsive potential
         """
-        dist_matrix = distance_matrix(self.positions.T, self.positions.T)
-        # replace the diagonal entries with 1
-        dist_matrix[np.diag_indices_from(dist_matrix)] = 1
-        # compute the inverse of the distance matrix
-        inv_dist_matrix = 1 / dist_matrix
-        dist_matrix[np.diag_indices_from(inv_dist_matrix)] = 0
-        # compute the sum of the inverse distances
-        sum_inv_dist_matrix = np.sum(inv_dist_matrix, axis=1)
-        # compute the repulsive forces
-        repulsive_forces = 2 * k * sum_inv_dist_matrix * self.positions
-        self.velocities += repulsive_forces
+        force_directions = self.positions[:, np.newaxis, :] - self.positions[:, :, np.newaxis] # compute the difference vectors between all pairs of particles, these are the force directions
+        dist_matrix = np.linalg.norm(force_directions, axis=0) # compute the distance matrix
+        np.fill_diagonal(dist_matrix, 1)  # replace the diagonal entries with 1
+        self.velocities += 2 * k * np.sum(force_directions / dist_matrix ** 5, axis=1) # add the repulsive forces to the velocities
+    
 
     def _apply_boundary_conditions(self):
         if self.boundary_conditions == "periodic":
@@ -170,20 +158,25 @@ class Swarm:
 
     
     def _zero_velocities(self):
+        """sets the velocities of the particles to zero"""
         self.velocities = np.zeros((2, self.size))
     
     def update_control_potential(self, increment):
+        """updates the location of the control potential
+        parameters:
+            increment (float): increment by which the location of the control potential is updated
+        """
         self.potential_fields["control"].update_location(increment, self.box_length, self.boundary_conditions)
 
     def evol(self):
-        """evolves the swarm by one time step"""
+        """evolves the swarm for one time step"""
         self._zero_velocities()
         self._compute_interactions()
         self._add_noise()
         self._add_noisy_interactions()
         self._add_pot_grads()
         if self.repulsion:
-            self.add_repulsive_forces(self.repulsion)
+            self._add_repulsive_forces(self.repulsion)
         self._update_positions()
         if self.walls is not None:
             for wall in self.walls:
