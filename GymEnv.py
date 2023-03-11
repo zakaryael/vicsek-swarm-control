@@ -29,6 +29,7 @@ class SwarmEnv(gym.Env):
         control_amplitude=0.01,
         out_dir=None,
         seed=42,
+        coefficient_of_restitution=1,
     ):
         super(SwarmEnv, self).__init__()
         self.g = np.random.default_rng(seed=seed)  # random number generator
@@ -49,6 +50,7 @@ class SwarmEnv(gym.Env):
         self.visualization = None
         self.n_trapped = 0
         self.n_trapped_old = 0
+        self.coefficient_of_restitution = coefficient_of_restitution
         # Define action and observation space
         # start with the action space: continuous 2d vector
         self.action_space = spaces.Box(
@@ -88,6 +90,7 @@ class SwarmEnv(gym.Env):
             boundary_conditions=boundary_conditions,
             walls=walls,
             repulsion=repulsion,
+            coefficient_of_restitution=coefficient_of_restitution,
         )
 
     def step(self, action):
@@ -128,6 +131,7 @@ class SwarmEnv(gym.Env):
             boundary_conditions=self.boundary_conditions,
             walls=self.walls,
             repulsion=self.repulsion,
+            coefficient_of_restitution=self.coefficient_of_restitution,
         )
         return self.observation()
 
