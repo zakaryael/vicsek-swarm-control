@@ -8,35 +8,50 @@ import numpy as np
 
 #parameters
 L = 1.0
-rho = 1000.0
+rho = 100.0
 N = int(rho*L**2)
 
 r0 = 0.05
-v0 = 0.01
+v0 = 1e-2
 eta = 0.1
+repulsion = 0
 
 boundary_conditions = "reflective"
 
 WALLS = [{"origin": np.array([0.4, 0.0]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.4, 0.55]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.0, 0.4]), "length": 0.45,  "axis": 0}, {"origin": np.array([0.55, 0.4]), "length": 0.45,  "axis": 0}]
 
-with open('../data/maze2.pckl', 'rb') as f:
+with open('../data/maze6bis.pckl', 'rb') as f:
     maze = pickle.load(f)
 
-WALLS = maze
+WALLS = None#maze
 
 loc_target = 0.7 * np.ones(2)
-loc_control = 0.1 * np.ones(2)
+loc_control = 0.3 * np.ones(2) #np.random.rand(2)
 
 # default values gaussian_potential_params = {"alpha": 100, "A": 0.01}
 
-gaussian_potential_params = {"alpha": 1000, "A": 0.01}
+gaussian_potential_params = {"alpha": 10000, "A": 1000}
 gaussian_potential_params2 = {"alpha": 100, "A": 0.01}
 
-inverse_potential_params = {"b": 0.1, "n": 2, "A": 0.0000}
-target_potential = GaussianPotential(loc_target, gaussian_potential_params)
-control_potential = GaussianPotential(loc_control, gaussian_potential_params)
+lj_potential = LennardJonesPotential(loc=np.array([0.7, 0.3]), params={"sigma": 0.001, "epsilon": 10})
+
+
+loc = np.array([0.5, 0.5])
+params = {"A": 0.01, "w": 20, "phi": 0}
+cos_potential = CosinePotential(loc, params)
+#instantiating a YukawaPotential object
+yukawa_potential = YukawaPotential(loc_target, {"A": 0.02, "k": 100})
+
+inverse_potential_params = {"b": 2, "n": 3, "A": 0.01}
+inverse_potential = InverseSquarePotential(loc=np.array([0.7, 0.3]), params=inverse_potential_params)
+target_potential = yukawa_potential#GaussianPotential(loc_target, gaussian_potential_params)
+control_potential = GaussianPotential(loc_control, gaussian_potential_params2)
 potential_fields = {"target": target_potential, "control": control_potential}
 
-Tmax = 1000
+Tmax = 100
 
-target_radius=0.01
+target_radius=0.04
+
+env_params = dict(N=N, L=L, v0=v0, r0=r0, eta=eta, potential_fields=potential_fields, Tmax=Tmax, target_radius=target_radius, boundary_conditions=boundary_conditions, walls=WALLS, repulsion=repulsion, target_location=loc_target, coefficient_of_restitution=1, seed=np.random.randint(0, 1000000))
+
+
