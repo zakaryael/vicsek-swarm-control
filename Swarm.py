@@ -53,6 +53,7 @@ class Swarm:
         self.repulsion = repulsion
         self.walls = walls
         self.coefficient_of_restitution = coefficient_of_restitution
+        self.in_range_mask = None
 
     def _compute_interactions(self):
         """computes the interaction term of the swarm dynamics"""
@@ -88,7 +89,7 @@ class Swarm:
 
     def _update_positions(self):
         """updates the positions of the particles"""
-        self.positions += self.velocities
+        self.positions[:, np.logical_not(self.in_range_mask)] += self.velocities[:, np.logical_not(self.in_range_mask)]
 
     def _update_orientations(self):
         normalized_velocities = self.velocities / np.linalg.norm(
@@ -262,6 +263,8 @@ class Swarm:
     def load_from_csv(self):
         pass
 
-    def in_range(self, position, radius):
-        dist = np.linalg.norm(self.positions.T - position, axis=1)
-        return dist < radius
+    def in_range(self, location, radius):
+        """returns a boolean array indicating whether the particles are within a given radius of a given location"""
+        dist = np.linalg.norm(self.positions.T - location, axis=1)
+        self.in_range_mask = dist < radius
+        return self.in_range_mask

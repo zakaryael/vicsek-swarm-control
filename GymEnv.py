@@ -97,7 +97,7 @@ class SwarmEnv(gym.Env):
         # compute the number of agents in the target
         self.n_trapped = np.sum(
             self.swarm.in_range(
-                self.potential_fields["target"].loc, self.target_radius
+                self.target_location, self.target_radius
             ),
             dtype=np.float32,
         )
@@ -180,8 +180,8 @@ class SwarmEnv(gym.Env):
             (
                 self.swarm.positions.flatten(),
                 self.swarm.orientations.flatten(),
-                self.potential_fields["target"].loc.flatten(),
-                self.potential_fields["control"].loc.flatten(),
+                self.target_location,
+                self.potential_fields["control"].loc,
                 np.array([self.Tmax - self.iteration]),
             ),
             dtype=np.float32,
@@ -210,4 +210,4 @@ class SwarmEnv(gym.Env):
         returns:
             done (bool): if the episode is done
         """
-        return self.iteration >= self.Tmax or self.n_trapped >= self.swarm.size
+        return self.iteration >= self.Tmax - 1 or self.n_trapped >= self.swarm.size

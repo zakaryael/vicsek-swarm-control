@@ -30,7 +30,7 @@ loc_control = 0.3 * np.ones(2) #np.random.rand(2)
 
 # default values gaussian_potential_params = {"alpha": 100, "A": 0.01}
 
-gaussian_potential_params = {"alpha": 10000, "A": 1000}
+gaussian_potential_params = {"alpha": 3000, "A": 0.1}
 gaussian_potential_params2 = {"alpha": 100, "A": 0.01}
 
 lj_potential = LennardJonesPotential(loc=np.array([0.7, 0.3]), params={"sigma": 0.001, "epsilon": 10})
@@ -44,13 +44,13 @@ yukawa_potential = YukawaPotential(loc_target, {"A": 0.02, "k": 100})
 
 inverse_potential_params = {"b": 2, "n": 3, "A": 0.01}
 inverse_potential = InverseSquarePotential(loc=np.array([0.7, 0.3]), params=inverse_potential_params)
-target_potential = yukawa_potential#GaussianPotential(loc_target, gaussian_potential_params)
+target_potential = GaussianPotential(loc_target, gaussian_potential_params)
 control_potential = GaussianPotential(loc_control, gaussian_potential_params2)
-potential_fields = {"target": target_potential, "control": control_potential}
+potential_fields = {"control": control_potential}
 
-Tmax = 100
+Tmax = 500
 
-target_radius=0.04
+target_radius=0.01
 
 env_params = dict(N=N, L=L, v0=v0, r0=r0, eta=eta, potential_fields=potential_fields, Tmax=Tmax, target_radius=target_radius, boundary_conditions=boundary_conditions, walls=WALLS, repulsion=repulsion, target_location=loc_target, coefficient_of_restitution=1, seed=np.random.randint(0, 1000000))
 
