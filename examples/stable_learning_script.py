@@ -10,11 +10,11 @@ from utils import *
 
 
 # training parameters
-n_total_timesteps = 100_000_000
-save_frequency = 10
+n_total_timesteps = 3#0_000_000
+save_frequency = 3
 n_save = n_total_timesteps // save_frequency
-n_eval = 1000
-n_envs = 16
+n_eval = 1
+n_envs = 3
 
 
 # create the data folder if it does not exist
@@ -69,5 +69,5 @@ for i in range(save_frequency):
         obs, reward, done, info = eval_env.step(action)
         eval_env.render(mode=None)
 
-#make a gif of the trained model
-save_learned_gif(model, eval_env, os.path.join(experiment_path, "trained_model.gif"), fps=10)
+    #make a gif of the trained model
+    save_learned_gif(model, eval_env, os.path.join(experiment_path, f"trained_model-{i}.gif"), fps=10)
