@@ -156,13 +156,14 @@ class SwarmEnv(gym.Env):
             # Render the environment to the screen
             if self.visualization is None:
                 self.visualization = SwarmVisualizer(self.L, walls=self.walls)
+            title = f"Vicsek Swarm - Time {self.iteration} s \n Captured: {self.n_trapped} \n Captured on last step: {self.n_captured()}"
+            self.visualization.set_title(title)
             return self.visualization.render(
                 self.swarm.positions,
                 self.swarm.orientations,
                 self.potential_fields,
                 self.target_location,
                 self.target_radius,
-                self.iteration,
             )
 
 
@@ -191,28 +192,18 @@ class SwarmEnv(gym.Env):
         returns:
             reward (float): the reward
         """
-        
         # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
         reward = -0.01
         # reward = -0.01 + self.n_captured()#* np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        # # add the number of agents in the target during this step
-        # reward += self.n_trapped - self.n_trapped_old
-
-        # if we're on the last iteration, add the number of agents in the target
         if self.done():
             reward += self.n_trapped
-
-        # x_control, y_control = self.potential_fields["control"].loc
-        # # check if the control potential field is inside the box
-        # if x_control < 0 or x_control > self.L or y_control < 0 or y_control > self.L:
-        #     reward -= 0  # penalize for being outside the box
         return reward
     
     def n_captured(self):
         """returns the number of agents newly in the target"""
-        n_capturred = self.n_trapped - self.n_trapped_old
+        n_captured = np.max(self.n_trapped - self.n_trapped_old, 0)
         self.n_trapped_old = self.n_trapped
-        return n_capturred
+        return n_captured
 
     def done(self):
         """returns if the episode is done
