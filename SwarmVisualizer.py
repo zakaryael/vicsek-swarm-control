@@ -183,3 +183,6 @@ class SwarmVisualizer:
                         target,
                         target_radius,
                     )
+    
+    def close(self):
+        plt.close(self.fig)

@@ -135,7 +135,7 @@ class SwarmEnv(gym.Env):
         )
         return self.observation()
 
-    def render(self, mode="plot", close=False):
+    def render(self, mode="plot", close=True):
         
         if self.out_dir:
             # Render the current state of the environment to a csv file
@@ -158,18 +158,26 @@ class SwarmEnv(gym.Env):
                 self.visualization = SwarmVisualizer(self.L, walls=self.walls)
             title = f"Vicsek Swarm - Time {self.iteration} s \n Captured: {self.n_trapped} \n Captured on last step: {self.n_captured()}"
             self.visualization.set_title(title)
-            return self.visualization.render(
+
+            img = self.visualization.render(
                 self.swarm.positions,
                 self.swarm.orientations,
                 self.potential_fields,
                 self.target_location,
                 self.target_radius,
             )
+            if self.done():
+                self.close()
+            return img
+        
 
 
 
     def close(self):
-        pass
+        """closes the environment and the visualization
+        """
+        if self.visualization is not None:
+            self.visualization.close()
 
     def observation(self):
         """returns the observation
@@ -192,9 +200,7 @@ class SwarmEnv(gym.Env):
         returns:
             reward (float): the reward
         """
-        # return -np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
-        reward = -0.01
-        # reward = -0.01 + self.n_captured()#* np.linalg.norm(self.swarm.positions - self.potential_fields["target"].loc, axis=0).mean()
+        reward = - np.linalg.norm(self.swarm.positions - self.target_location[:, np.newaxis], axis=0).mean()
         if self.done():
             reward += self.n_trapped
         return reward
