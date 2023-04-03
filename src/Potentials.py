@@ -7,7 +7,7 @@ class Potential:
     def __init__(self, loc):
         """initializes the potential"""
         self.loc = loc
-    
+
     def compute_distance_vector(self, positions):
         """computes the distance vector between the potential and the agents
         parameters:
@@ -21,14 +21,13 @@ class Potential:
         if boundary_conditions == "periodic":
             self.loc[self.loc < 0] += boxsize
             self.loc[self.loc > boxsize] -= boxsize
-        
+
         elif boundary_conditions == "reflective":
             if self.loc[0] < 0 or self.loc[0] > boxsize:
                 increment[0] *= -1
             if self.loc[1] < 0 or self.loc[1] > boxsize:
                 increment[1] *= -1
             self.loc += increment
-        
 
 
 # define a class for gaussian potential that inherits from the potential class
@@ -58,7 +57,7 @@ class GaussianPotential(Potential):
             * self.alpha
             * self.dist_vec
             * self.A
-            * np.exp(-self.alpha * np.sum(self.dist_vec ** 2, axis=0))
+            * np.exp(-self.alpha * np.sum(self.dist_vec**2, axis=0))
         )
 
     def compute_values(self, x, y):
@@ -98,9 +97,9 @@ class InverseSquarePotential(Potential):
             * self.A
             * self.n
             * self.dist_vec
-            / (self.b**2 + np.sum(self.dist_vec ** 2, axis=0))
-            ** (self.n + 1)
+            / (self.b**2 + np.sum(self.dist_vec**2, axis=0)) ** (self.n + 1)
         )
+
 
 class LennardJonesPotential(Potential):
     """Lennard-Jones potential
@@ -120,11 +119,13 @@ class LennardJonesPotential(Potential):
     def compute_gradients(self, positions):
         # compute distance vector between particles
         self.compute_distance_vector(positions)
-        dist_sq = np.sum(self.dist_vec ** 2, axis=0)
+        dist_sq = np.sum(self.dist_vec**2, axis=0)
 
         # compute the force magnitudes using the Lennard-Jones potential
-        force_mag = 24 * self.epsilon * (
-            2 * (self.sigma ** 12 / dist_sq ** 7) - (self.sigma ** 6 / dist_sq ** 4)
+        force_mag = (
+            24
+            * self.epsilon
+            * (2 * (self.sigma**12 / dist_sq**7) - (self.sigma**6 / dist_sq**4))
         )
 
         # compute the force directions
@@ -141,6 +142,7 @@ class LennardJonesPotential(Potential):
     def compute_values(self, x, y):
         r = np.sqrt((x - self.loc[0]) ** 2 + (y - self.loc[1]) ** 2)
         return 4 * self.epsilon * ((self.sigma / r) ** 12 - (self.sigma / r) ** 6)
+
 
 class CosinePotential(Potential):
     """cosine potential
@@ -165,14 +167,9 @@ class CosinePotential(Potential):
 
     def compute_gradients(self, positions):
         self.compute_distance_vector(positions)
-        r = np.sqrt(np.sum(self.dist_vec ** 2, axis=0))
-        return (
-            -self.A
-            * self.w
-            * np.sin(self.w * r + self.phi)
-            * self.dist_vec
-            / r
-        )
+        r = np.sqrt(np.sum(self.dist_vec**2, axis=0))
+        return -self.A * self.w * np.sin(self.w * r + self.phi) * self.dist_vec / r
+
 
 class InverseDistancePotential(Potential):
     """Inverse distance potential
@@ -182,6 +179,7 @@ class InverseDistancePotential(Potential):
         params (dictionary): dictionary of parameters for the potential
             A (float): amplitude of the potential
     """
+
     def __init__(self, loc, params):
         super().__init__(loc)
         self.A = params["A"]
@@ -192,8 +190,10 @@ class InverseDistancePotential(Potential):
 
     def compute_gradients(self, positions):
         self.compute_distance_vector(positions)
-        r = np.sqrt(np.sum(self.dist_vec ** 2, axis=0))
-        return -self.A * self.dist_vec / r**3 if r > 0 else np.zeros_like(self.dist_vec)
+        r = np.sqrt(np.sum(self.dist_vec**2, axis=0))
+        return (
+            -self.A * self.dist_vec / r**3 if r > 0 else np.zeros_like(self.dist_vec)
+        )
 
 
 class YukawaPotential(Potential):
@@ -205,6 +205,7 @@ class YukawaPotential(Potential):
             A (float): amplitude of the potential
             k (float): decay constant of the potential
     """
+
     def __init__(self, loc, params):
         super().__init__(loc)
         self.A = params["A"]
@@ -216,6 +217,5 @@ class YukawaPotential(Potential):
 
     def compute_gradients(self, positions):
         self.compute_distance_vector(positions)
-        r = np.sqrt(np.sum(self.dist_vec ** 2, axis=0))
-        return -self.A * (self.k*r + 1) * self.dist_vec * np.exp(-self.k*r) / r**3
-    
+        r = np.sqrt(np.sum(self.dist_vec**2, axis=0))
+        return -self.A * (self.k * r + 1) * self.dist_vec * np.exp(-self.k * r) / r**3

@@ -1,11 +1,11 @@
-
 import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # add the parent directory to the path
+project_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # add the parent directory to the path
+sys.path.append(project_dir) # add the parent directory to the path
+
 import pickle
 
-from potentials import *
+from src.Potentials import *
 import numpy as np
-
 #parameters
 L = 1.0
 rho = 100.0
@@ -19,11 +19,11 @@ repulsion = 0
 boundary_conditions = "reflective"
 
 WALLS = [{"origin": np.array([0.4, 0.0]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.4, 0.55]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.0, 0.4]), "length": 0.45,  "axis": 0}, {"origin": np.array([0.55, 0.4]), "length": 0.45,  "axis": 0}]
-
-with open('../data/maze6bis.pckl', 'rb') as f:
+maze_path = os.path.join(project_dir, "data", "maze6bis.pckl")
+with open(maze_path, 'rb') as f:
     maze = pickle.load(f)
 
-WALLS = None#maze
+WALLS = maze
 
 loc_target = 0.7 * np.ones(2)
 loc_control = 0.3 * np.ones(2) #np.random.rand(2)
@@ -48,10 +48,8 @@ target_potential = GaussianPotential(loc_target, gaussian_potential_params)
 control_potential = GaussianPotential(loc_control, gaussian_potential_params2)
 potential_fields = {"control": control_potential}
 
-Tmax = 500
+Tmax = 10000
 
 target_radius=0.01
 
 env_params = dict(N=N, L=L, v0=v0, r0=r0, eta=eta, potential_fields=potential_fields, Tmax=Tmax, target_radius=target_radius, boundary_conditions=boundary_conditions, walls=WALLS, repulsion=repulsion, target_location=loc_target, coefficient_of_restitution=1, seed=np.random.randint(0, 1000000))
-
-
