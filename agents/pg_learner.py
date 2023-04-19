@@ -41,7 +41,9 @@ class PolicyNetwork:
 
 
 class ValueNetwork:
-    def __init__(self, obs_dim, hidden_layers=[4]):
+    def __init__(self, obs_dim, hidden_layers=None):
+        if hidden_layers is None:
+            hidden_layers = [4]
         self.network_layers = [obs_dim] + hidden_layers + [1]
         self.n_layers = len(hidden_layers) + 2
         self.parameters = []
