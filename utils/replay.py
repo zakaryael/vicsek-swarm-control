@@ -1,4 +1,4 @@
-import imageio as imageio
+import imageio
 import numpy as np
 import os
 import pickle
