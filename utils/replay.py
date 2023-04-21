@@ -11,7 +11,7 @@ def save_gif(env, filename, timesteps=1000, fps=30):
     for i in range(timesteps):
         images.append(img)
         action, _ = model.predict(obs)
-        obs, _, _, _ = env.step(action)
+        obs, _, _, _ = env.step(action.item())
         img = env.render()
     imageio.mimsave(filename, images, fps=fps)
 
@@ -24,7 +24,7 @@ def save_learned_gif(model, env, filename, fps=30):
     while not env.done():
         images.append(img)
         action, _ = model.predict(obs)
-        obs, _, _, _ = env.step(action)
+        obs, _, _, _ = env.step(action.item())
         img = env.render()
     imageio.mimsave(filename, images, fps=fps)
 
@@ -38,7 +38,7 @@ def save_frames(model, env, folder, fname="images.pkl"):
 
     while not env.done():
         action, _ = model.predict(obs)
-        obs, _, _, _ = env.step(action)
+        obs, _, _, _ = env.step(action.item())
         img = env.render()
         images.append(img)
     # save the images list using pickle
