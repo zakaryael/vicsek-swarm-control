@@ -8,7 +8,7 @@ from src.Potentials import *
 import numpy as np
 #parameters
 L = 1.0
-rho = 10.0
+rho = 1000.0
 N = int(rho*L**2)
 
 r0 = 0.05
@@ -16,14 +16,14 @@ v0 = 1e-2
 eta = 0.1
 repulsion = 0
 
-boundary_conditions = "reflective"
+boundary_conditions = "periodic"
 
 WALLS = [{"origin": np.array([0.4, 0.0]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.4, 0.55]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.0, 0.4]), "length": 0.45,  "axis": 0}, {"origin": np.array([0.55, 0.4]), "length": 0.45,  "axis": 0}]
-maze_path = os.path.join(project_dir, "data", "maze0.pckl")
+maze_path = os.path.join(project_dir, "data", "maze6bis.pckl")
 with open(maze_path, 'rb') as f:
     maze = pickle.load(f)
 
-WALLS = None#maze
+WALLS = maze
 
 loc_target = 0.7 * np.ones(2)
 loc_control = 0.3 * np.ones(2) #np.random.rand(2)
@@ -48,7 +48,7 @@ target_potential = GaussianPotential(loc_target, gaussian_potential_params)
 control_potential = GaussianPotential(loc_control, gaussian_potential_params2)
 potential_fields = {"control": control_potential}
 
-Tmax = 200
+Tmax = 400
 
 target_radius=0.04
 
