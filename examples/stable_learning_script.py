@@ -1,20 +1,21 @@
 from parameters import *
-from GymEnv import SwarmEnv
+from gym_swarm_envs.envs.GymEnv import SwarmEnv
 from stable_baselines3 import PPO, A2C, SAC, TD3
 # from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.evaluation import evaluate_policy
 import time
 import copy 
-from utils import *
+from utils.replay import *
+
 
 
 # training parameters
-n_total_timesteps = 3#0_000_000
-save_frequency = 3
+n_total_timesteps = 30_000_000
+save_frequency = 30
 n_save = n_total_timesteps // save_frequency
-n_eval = 1
-n_envs = 3
+n_eval = 1000
+n_envs = 1
 
 
 # create the data folder if it does not exist
@@ -26,7 +27,6 @@ if not os.path.exists("../data"):
 experiment_name = time.strftime("%Y%m%d-%H%M%S")
 experiment_path = os.path.join("../data", experiment_name)
 os.mkdir(experiment_path)
-
 
 
 # create the environment
@@ -44,6 +44,8 @@ if not os.path.exists(logs):
 
 # make a loop to save the model every n_save steps
 for i in range(save_frequency):
+    print(f"episode: {i * n_save}")
+    print(f"_____________________")
     # train the model for n_save steps
     model.learn(n_save, reset_num_timesteps=False, tb_log_name='tb_log')
     # save the model
@@ -66,7 +68,7 @@ for i in range(save_frequency):
     eval_env.render(mode=None)
     while not eval_env.done():
         action, _ = model.predict(obs, deterministic=True)
-        obs, reward, done, info = eval_env.step(action)
+        obs, reward, done, info = eval_env.step(action.item())
         eval_env.render(mode=None)
 
     #make a gif of the trained model
