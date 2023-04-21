@@ -159,7 +159,7 @@ class Swarm:
         )  # compute the distance matrix
         np.fill_diagonal(dist_matrix, 1)  # replace the diagonal entries with 1
         self.velocities += (
-            2 * k * np.sum(force_directions / dist_matrix**5, axis=1)
+            2 * k * np.sum(force_directions / dist_matrix**1, axis=1)
         )  # add the repulsive forces to the velocities
 
     def _apply_boundary_conditions(self):
