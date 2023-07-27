@@ -7,7 +7,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 
 class SwarmVisualizer:
-    def __init__(self, L, cmap="RdYlBu_r", walls=None, quiver=False):
+    def __init__(self, L, cmap="RdYlBu_r", walls=None, quiver=True):
         self.L = L
         self.fig = plt.figure(figsize=[10, 10])
         self.ax = self.fig.add_subplot(111)
