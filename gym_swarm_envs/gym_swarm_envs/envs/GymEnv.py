@@ -169,7 +169,7 @@ class SwarmEnv(gym.Env):
             # Render the environment to the screen
             if self.visualization is None:
                 self.visualization = SwarmVisualizer(self.L, walls=self.walls)
-            title = f"Vicsek Swarm - Time {self.iteration} s \n Captured: {self.n_trapped} \n Captured on last step: {self.n_captured()}"
+            title = f"Vicsek Swarm - Time {self.iteration} s \n Captured: {self.n_trapped} / {self.N}\n Captured on last step: {self.n_captured()}"
             self.visualization.set_title(title)
 
             img = self.visualization.render(
