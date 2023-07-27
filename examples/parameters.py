@@ -16,7 +16,7 @@ v0 = 1e-2
 eta = 0.1
 repulsion = 0
 
-boundary_conditions = "periodic"
+boundary_conditions = "reflective"
 
 WALLS = [{"origin": np.array([0.4, 0.0]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.4, 0.55]), "length": 0.45,  "axis": 1}, {"origin": np.array([0.0, 0.4]), "length": 0.45,  "axis": 0}, {"origin": np.array([0.55, 0.4]), "length": 0.45,  "axis": 0}]
 maze_path = os.path.join(project_dir, "data", "maze6bis.pckl")
@@ -31,7 +31,7 @@ loc_control = 0.3 * np.ones(2) #np.random.rand(2)
 # default values gaussian_potential_params = {"alpha": 100, "A": 0.01}
 
 gaussian_potential_params = {"alpha": 3000, "A": 0.01}
-gaussian_potential_params2 = {"alpha": 100, "A": 0.01}
+gaussian_potential_params2 = {"alpha": 200, "A": 0.01}
 
 lj_potential = LennardJonesPotential(loc=np.array([0.7, 0.3]), params={"sigma": 0.001, "epsilon": 10})
 
