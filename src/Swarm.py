@@ -25,14 +25,17 @@ class Swarm:
         coefficient_of_restitution=1,
         save_mode=None,
     ):
-        """initializes the swarm object
-        parameters:
-            positions (dxN numpy array): Holds the coordinates of the N particles forming the swarm
-            orientations (array of size N): The orientations of the N particles
-            vel_magnitude (float): initial velocity magnitude of the particles
-            sensing_radius (float):
-            noise (float):
-            box_length (float):
+        """
+        Initializes the Swarm object.
+
+        Args:
+            positions (np.array): Array of the positions of the agents in the swarm.
+            orientations (np.array): Array of the orientations of the agents in the swarm.
+            vel_magnitude (float): Magnitude of the velocity.
+            sensing_radius (float): Sensing radius of the agents.
+            noise (float): Noise added to the orientations of the agents.
+            box_length (float): Length of the box in which the swarm is contained.
+            potentials (list): List of potential fields acting on the agents.
         """
         assert orientations.shape[0] == positions.shape[1]
         self.size = orientations.shape[0]
