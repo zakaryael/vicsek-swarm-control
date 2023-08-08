@@ -10,6 +10,9 @@ examples/xp*
 *frames
 trash-bin
 
+#gym specific
+*.egg-info
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
